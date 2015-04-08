@@ -1,4 +1,5 @@
 # coding=utf-8
+import json
 
 import wb_client
 import time
@@ -9,12 +10,15 @@ from bs4 import BeautifulSoup
 def get_forward_info_from_item(item_html):
     result = {}
 
-    soup = BeautifulSoup(item_html)
+    if type(item_html) is str:
+        soup = BeautifulSoup(item_html)
+        list_li = soup.find(class_='list_li')
+    else:
+        list_li = item_html
 
-    list_li = soup.find(class_='list_li')
-    result['mid'] = list_li['mid']
+    result['mid'] = int(list_li['mid'])
 
-    a_list = soup.select('.WB_text > a')
+    a_list = list_li.select('.WB_text > a')
     if len(a_list) == 0:
         return None
 
@@ -53,7 +57,7 @@ def get_forward_info_from_item(item_html):
 
     result['user'] = user_info
 
-    wb_list = soup.select('.WB_text span')
+    wb_list = list_li.select('.WB_text span')
 
     if len(wb_list) == 0:
         return None
@@ -61,7 +65,10 @@ def get_forward_info_from_item(item_html):
     wb_main = wb_list[0]
 
     for i in wb_main.find_all('img'):
-        i.replace_with(i['title'])
+        if 'title' in i.attrs:
+            i.replace_with(i['title'])
+        else:
+            i.replace_with('[' + i['src'] + ']')
 
     for i in wb_main.find_all('a'):
         if i['extra-data'] == 'type=atname':
@@ -82,12 +89,12 @@ def get_forward_info_from_item(item_html):
         result['forward_from'] = None
         pass
 
-    a_list = soup.select('.WB_from a')
+    a_list = list_li.select('.WB_from a')
     if len(a_list) == 0 or a_list[0]['node-type'] != 'feed_list_item_date':
         return None
         pass
 
-    handle_list = soup.select('.WB_handle .S_txt1')
+    handle_list = list_li.select('.WB_handle .S_txt1')
 
     result['forward'] = 0
     result['like'] = 0
@@ -105,17 +112,48 @@ def get_forward_info_from_item(item_html):
         pass
 
     result['date'] = int(int(a_list[0]['date']) / 1000)
-    print(result)
+    # print(result)
+    return result
     pass
 
 
-def get_share_info(mid, page):
+def get_forward_list_info_from_json(forward_json):
+    result = {
+        'count': forward_json['data']['count'],
+        'total_page': forward_json['data']['page']['totalpage'],
+        'item': [],
+        'max_mid': None
+    }
+
+    soup = BeautifulSoup(forward_json['data']['html'])
+    max_mid = 0
+
+    for item in soup.select('.list_li'):
+        item_result = get_forward_info_from_item(item)
+        if item_result['mid'] > max_mid:
+            max_mid = item_result['mid']
+
+        result['item'].append(item_result)
+        pass
+
+    result['max_mid'] = max_mid
+    # print(result)
+    return result
+    pass
+
+
+def req_forward_info(mid, page=None, max_id=None):
     params = {
         'ajwvr': 6,
         'mid': mid,
-        'page': page,
         '__rnd': int(time.time() * 1000)
     }
+
+    if page is not None:
+        params['page'] = page
+    if max_id is not None:
+        params['max_id'] = max_id
+
     request_result = wb_client.get_client().get('http://weibo.com/aj/v6/mblog/info/big', params=params)
 
     return request_result.json()
@@ -123,5 +161,7 @@ def get_share_info(mid, page):
 
 
 if __name__ == '__main__':
-    get_forward_info_from_item('''
-        ''')
+    data = get_forward_list_info_from_json(json.loads(r'''
+
+        '''.replace('\n', '').strip()))
+    print(json.dumps(data))
