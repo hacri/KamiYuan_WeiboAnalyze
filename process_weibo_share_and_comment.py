@@ -7,6 +7,38 @@ import re
 from bs4 import BeautifulSoup
 
 
+def filter_weibo_content(content):
+    if type(content) == 'str':
+        soup = BeautifulSoup(content)
+    else:
+        soup = content
+        pass
+
+    for i in soup.find_all('img'):
+        if 'title' in i.attrs:
+            i.replace_with(i['title'])
+        else:
+            i.replace_with('[' + i['src'] + ']')
+
+    for i in soup.find_all('a'):
+        if 'extra-data' in i.attrs:
+            if i['extra-data'] == 'type=atname':
+                i.replace_with(i.text + ' ')
+                pass
+            elif i['extra-data'] == 'a_topic':
+                i.replace_with(i.text)
+                pass
+            pass
+        else:
+            i.replace_with(i['href'])
+            pass
+        pass
+
+    text = re.sub('\n', '', soup.text)
+    return re.sub('[\n ]{2,}', ' ', text)
+    pass
+
+
 def get_forward_info_from_item(item_html):
     result = {}
 
@@ -64,23 +96,7 @@ def get_forward_info_from_item(item_html):
 
     wb_main = wb_list[0]
 
-    for i in wb_main.find_all('img'):
-        if 'title' in i.attrs:
-            i.replace_with(i['title'])
-        else:
-            i.replace_with('[' + i['src'] + ']')
-
-    for i in wb_main.find_all('a'):
-        if i['extra-data'] == 'type=atname':
-            i.replace_with(i.text + ' ')
-            pass
-        elif i['extra-data'] == 'a_topic':
-            i.replace_with(i.text)
-            pass
-
-    result['wb_content'] = wb_main.text
-    result['wb_content'] = re.sub('\n', '', result['wb_content'])
-    result['wb_content'] = re.sub('[\n ]{2,}', ' ', result['wb_content'])
+    result['wb_content'] = filter_weibo_content(wb_main)
 
     re_search = re.search('//[ ]*@([^ ]+)', result['wb_content'])
     if re_search:
@@ -145,8 +161,8 @@ def get_forward_list_info_from_json(forward_json):
 def req_forward_info(mid, page=None, max_id=None):
     params = {
         'ajwvr': 6,
-        'mid': mid,
-        '__rnd': int(time.time() * 1000)
+        'id': mid,
+        '__rnd': int(time.time() * 1000) - 10000
     }
 
     if page is not None:

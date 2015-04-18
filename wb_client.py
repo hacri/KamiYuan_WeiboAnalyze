@@ -33,8 +33,7 @@ def init_client():
 
 def get_client():
     """
-    :return:
-        requests.Session
+    :rtype: requests.Session
     """
     global wb_client
     if wb_client is None:

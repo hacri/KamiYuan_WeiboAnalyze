@@ -3,6 +3,7 @@
 from bs4 import BeautifulSoup
 import re
 import json
+import process_weibo_share_and_comment
 import codecs
 
 
@@ -20,7 +21,7 @@ def find_content_from_html(raw_html):
     soup = BeautifulSoup(raw_html)
     text_items = soup.select('.WB_text')
     for i in text_items:
-        return i.get_text().strip()
+        return process_weibo_share_and_comment.filter_weibo_content(i)
     return None
     pass
 
@@ -62,6 +63,7 @@ if __name__ == '__main__':
     # html = codecs.open('weibo_page.html', 'r', encoding='utf-8')
     # print(get_id_and_content(html))
     import wb_client
+
     thehtml = wb_client.get_client().get('http://weibo.com/2656274875/Cc36UmeSo').text
     print(get_id_and_content(thehtml))
     pass
