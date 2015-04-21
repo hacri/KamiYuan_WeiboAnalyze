@@ -98,6 +98,14 @@ def get_forward_info_from_item(item_html):
 
     result['wb_content'] = filter_weibo_content(wb_main)
 
+    re_wb_main = re.match('^(.*?)//', result['wb_content'])
+    if re_wb_main:
+        result['wb_content_main'] = re_wb_main.group(1)
+        pass
+    else:
+        result['wb_content_main'] = result['wb_content']
+        pass
+
     re_search = re.search('//[ ]*@([^ ]+)', result['wb_content'])
     if re_search:
         result['forward_from'] = re_search.group(1)
