@@ -23,6 +23,7 @@ def init_client():
         if len(tmp) >= 2:
             cookie_dict[tmp[0]] = tmp[1]
 
+    # 伪造成浏览器
     wb_client = requests.session()
     wb_client.cookies = requests.cookies.cookiejar_from_dict(cookie_dict)
     wb_client.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 6.3; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0'

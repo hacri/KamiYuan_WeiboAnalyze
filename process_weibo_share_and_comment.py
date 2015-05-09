@@ -8,6 +8,11 @@ from bs4 import BeautifulSoup
 
 
 def filter_weibo_content(content):
+    """
+    处理weibo内容。替换链接和表情
+    :param content:
+    :return:
+    """
     if type(content) == 'str':
         soup = BeautifulSoup(content)
     else:
@@ -40,6 +45,11 @@ def filter_weibo_content(content):
 
 
 def get_forward_info_from_item(item_html):
+    """
+    获取1条转发的信息
+    :param item_html:
+    :return:
+    """
     result = {}
 
     if type(item_html) is str:
@@ -54,6 +64,7 @@ def get_forward_info_from_item(item_html):
     if len(a_list) == 0:
         return None
 
+    # 获取转发的人的信息
     forward_user = a_list[0]
     user_info = {
         'name': forward_user.get_text(),
@@ -65,7 +76,9 @@ def get_forward_info_from_item(item_html):
     }
 
     if len(a_list) > 1:
+        # 获取用户额外身份
         for i in a_list[1:]:
+            # 微博会员
             if 'title' in i.attrs and i['title'] == '微博会员':
                 for j in i.find('i')['class']:
                     re_match = re.match('icon_member(\d*)', j)
@@ -79,25 +92,27 @@ def get_forward_info_from_item(item_html):
                     continue
 
                 if 'icon_approve' in sub_i['class']:
+                    # 黄v认证
                     user_info['yellow_v'] = True
                 elif 'icon_club' in sub_i['class']:
+                    # 微博达人
                     user_info['daren'] = True
                 elif 'icon_approve_co' in sub_i['class']:
+                    # 蓝v认证
                     user_info['blue_v'] = True
                 pass
             pass
 
     result['user'] = user_info
 
+    # 获取微博内容
     wb_list = list_li.select('.WB_text span')
-
     if len(wb_list) == 0:
         return None
-
     wb_main = wb_list[0]
-
     result['wb_content'] = filter_weibo_content(wb_main)
 
+    # 获取转发评论
     re_wb_main = re.match('^(.*?)//', result['wb_content'])
     if re_wb_main:
         result['wb_content_main'] = re_wb_main.group(1)
@@ -106,6 +121,7 @@ def get_forward_info_from_item(item_html):
         result['wb_content_main'] = result['wb_content']
         pass
 
+    # 获取转发来源
     re_search = re.search('//[ ]*@([^ ]+)', result['wb_content'])
     if re_search:
         result['forward_from'] = re_search.group(1)
@@ -113,35 +129,43 @@ def get_forward_info_from_item(item_html):
         result['forward_from'] = None
         pass
 
+    # 获取转发日期
     a_list = list_li.select('.WB_from a')
     if len(a_list) == 0 or a_list[0]['node-type'] != 'feed_list_item_date':
         return None
         pass
+    result['date'] = int(int(a_list[0]['date']) / 1000)
 
+    # 获取转发数据
     handle_list = list_li.select('.WB_handle .S_txt1')
-
     result['forward'] = 0
     result['like'] = 0
     for i in handle_list:
         if 'action-type' in i.attrs:
             if i['action-type'] == 'feed_list_forward':
+                # 获取转发数
                 tmp = i.text.split(' ')
                 if len(tmp) == 2:
                     result['forward'] = int(tmp[1])
             elif i['action-type'] == 'forward_like':
+                # 获取点赞数
                 if i.get_text() != '':
                     result['like'] = int(i.get_text())
                 pass
             pass
         pass
 
-    result['date'] = int(int(a_list[0]['date']) / 1000)
     # print(result)
     return result
     pass
 
 
 def get_forward_list_info_from_json(forward_json):
+    """
+    获取一组（一页）转发内容
+    :param forward_json:
+    :return:
+    """
     result = {
         'count': forward_json['data']['count'],
         'total_page': forward_json['data']['page']['totalpage'],
@@ -152,6 +176,7 @@ def get_forward_list_info_from_json(forward_json):
     soup = BeautifulSoup(forward_json['data']['html'])
     max_mid = 0
 
+    # 循环获取每条微博转发内容
     for item in soup.select('.list_li'):
         item_result = get_forward_info_from_item(item)
         if item_result['mid'] > max_mid:
@@ -167,6 +192,13 @@ def get_forward_list_info_from_json(forward_json):
 
 
 def req_forward_info(mid, page=None, max_id=None):
+    """
+    发送http请求获取转发内容
+    :param mid:
+    :param page:
+    :param max_id:
+    :return:
+    """
     params = {
         'ajwvr': 6,
         'id': mid,

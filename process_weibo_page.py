@@ -8,6 +8,11 @@ import codecs
 
 
 def find_id_from_html(raw_html):
+    """
+    从html中获取mid
+    :param raw_html:
+    :return:
+    """
     soup = BeautifulSoup(raw_html)
     id_item = soup.select('.WB_feed_profile .WB_cardwrap')
     for i in id_item:
@@ -18,6 +23,11 @@ def find_id_from_html(raw_html):
 
 
 def find_content_from_html(raw_html):
+    """
+    从html中获取weibo内容
+    :param raw_html:
+    :return:
+    """
     soup = BeautifulSoup(raw_html)
     text_items = soup.select('.WB_text')
     for i in text_items:
@@ -27,6 +37,11 @@ def find_content_from_html(raw_html):
 
 
 def get_id_and_content(raw_html):
+    """
+    从html中获取id和内容
+    :param raw_html:
+    :return:
+    """
     soup = BeautifulSoup(raw_html)
 
     mid = None
