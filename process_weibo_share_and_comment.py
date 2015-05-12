@@ -60,11 +60,11 @@ def get_forward_info_from_item(item_html):
 
     result['mid'] = int(list_li['mid'])
 
+    # 获取转发的人的信息
     a_list = list_li.select('.WB_text > a')
     if len(a_list) == 0:
         return None
 
-    # 获取转发的人的信息
     forward_user = a_list[0]
     user_info = {
         'name': forward_user.get_text(),
@@ -217,7 +217,48 @@ def req_forward_info(mid, page=None, max_id=None):
 
 
 if __name__ == '__main__':
-    data = get_forward_list_info_from_json(json.loads(r'''
+    # data = get_forward_list_info_from_json(json.loads(r'''
+    #
+    # '''.replace('\n', '').strip()))
+    # print(json.dumps(data))
+    the_html = '''
+    <div class="list_li S_line1 clearfix" mid="3829113125506242" action-type="feed_list_item">
+    <div class="WB_face W_fl"><a target="_blank" href="/feicainv" usercard="id=1623205061"><img
+            src="http://tp2.sinaimg.cn/1623205061/50/5719245518/0" usercard="id=1623205061" alt="粘土阿呆"></a></div>
+    <div class="list_con">
+        <div class="WB_text"><a target="_blank" href="/feicainv" usercard="id=1623205061"
+                                node-type="name">粘土阿呆</a>：<span node-type="text">【学生ですか？よく聞いて、私は会社員で、プログラマーに従事しています！（假日摄影着？）もしほかの質問があればどうぞ聞かせてください。遅いけど、少しずつ答えます。】？？//<a
+                target="_blank" render="ext" extra-data="type=atname"
+                href="http://weibo.com/n/%E7%BE%BD%E5%B7%9D%E6%A0%97%E6%94%B9%E4%BA%8C?from=feed&loc=at"
+                usercard="name=羽川栗改二">@羽川栗改二</a>:…问一下会日语的大佬，【很好的被听见】是【问得好】吗</span></div>
+        <div class="WB_func clearfix">
+            <div class="WB_handle W_fr">
+                <ul class="clearfix">
+                    <li class="hover"><span class="line S_line1">
+                                            <a href="javascript:void(0);" class="S_txt1"
+                                               onclick="javascript:window.open('http://service.account.weibo.com/reportspam?rid=3829113125506242&type=1&from=10105&url=&bottomnav=1&wvr=6', 'newwindow', 'height=700, width=550, toolbar =yes, menubar=no, scrollbars=yes, resizable=yes, location=no, status=no');">举报</a>
+                                        </span></li>
+                    <li><span class="line S_line1">
+                                            <a href="javascript:void(0);" class="S_txt1"
+                                               action-data="allowForward=1&rootmid=3829040131905494&rootname=菌chan&rootuid=5579056223&rooturl=http://weibo.com/5579056223/CcbsV7ZHM&url=http://weibo.com/1623205061/CcdmEn6qm&mid=3829113125506242&name=粘土阿呆&uid=1623205061&domain=5579056223&postdata=area,2"
+                                               action-history="rec=1" action-type="feed_list_forward"
+                                               onclick="return false;">转发</a>
+                                    </span></li>
+                    <li><span class="line S_line1"><a class="S_txt1" title="赞"
+                                                      action-data="version=mini&qid=heart&mid=3829113125506242&like_src=1"
+                                                      action-type="forward_like" href="javascript:void(0);"><span
+                            node-type="like_status"><i class="W_icon icon_praised_b"></i><em></em></span></a></span>
+                    </li>
+                </ul>
+            </div>
+            <div class="WB_from S_txt2"><a target="_blank" href="/1623205061/CcdmEn6qm" title="2015-04-07 21:59"
+                                           date="1428415173000" class="S_txt1" node-type="feed_list_item_date"
+                                           suda-data="key=tblog_home_new&value=feed_tran_time">今天 21:59</a></div>
+        </div>
+    </div>
+</div>
 
-        '''.replace('\n', '').strip()))
-    print(json.dumps(data))
+    '''
+
+    print(get_forward_info_from_item(the_html))
+    pass
