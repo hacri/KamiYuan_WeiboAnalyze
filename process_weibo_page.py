@@ -65,7 +65,7 @@ def get_user_info(raw_html):
         user_info['name'] = username_item[0].text
 
         photo_src = i.find('img', class_='photo')['src']
-        result = re.match('http://tp4.sinaimg.cn/(\d+)/\d+/\d+/1', photo_src)
+        result = re.match('http://tp\d.sinaimg.cn/(\d+)/\d+/\d+/1', photo_src)
         if result:
             user_info['id'] = result.group(1)
         else:
@@ -147,7 +147,7 @@ def get_id_and_content(raw_html):
                 return mid, content, pub_date, user_info
             pass
         pass
-    return None, None, None
+    return None, None, None, None
     pass
 
 

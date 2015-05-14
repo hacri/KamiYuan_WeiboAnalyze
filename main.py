@@ -38,7 +38,7 @@ def req_all_forward_info(weibo_url):
     db_conn.my_conn.cursor().execute('''
     INSERT `weibo_info` ( `mid`, `weibo_url`, `weibo_content`, `user_id`, `forward_count`, `date`, `status`)
     VALUES (%s, %s, %s, %s, %s, %s, %s)
-    ON DUPLICATE KEY UPDATE `user_id` = `user_id`
+    ON DUPLICATE KEY UPDATE `user_id` = VALUES(`user_id`), `forward_count` = VALUES(`forward_count`)
     ''', (mid, weibo_url, content, user_info['id'], page_info['count'], pub_date, 0))
 
     # 最大mid
